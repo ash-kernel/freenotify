@@ -37,6 +37,7 @@ async function postGameToWebhook(game) {
     };
 
     const payload = {
+        username: 'Free Notify',
         content: '||<@&1519658019842035732>||',
         embeds: [embed]
     };

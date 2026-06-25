@@ -1,4 +1,8 @@
-# FreeNotify
+<div align="center">
+<img src="assets/shavv.png" width="400">
+
+# Free Notify
+</div>
 
 A lightweight Node.js script that automatically fetches the latest free games (from Epic Games, Steam, GOG, etc.) using the GamerPower API and posts them directly to your Discord server via Webhook.
 
@@ -36,8 +40,3 @@ A lightweight Node.js script that automatically fetches the latest free games (f
 
 ## License
 This project is licensed under the [MIT License](LICENSE).
-
-## Invite the Bot
-Don't want to host it yourself? You can invite the official Shavv bot to your server directly!
-[Invite Shavv Bot](https://shavv.vercel.app)
-
