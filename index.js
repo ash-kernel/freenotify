@@ -4,67 +4,68 @@ const { fetchFreeGames } = require('./api');
 const { loadPostedGames, savePostedGame, savePostedGamesBulk } = require('./storage');
 const { postGameToWebhook } = require('./webhook');
 
-// Main job logic
+// The big boss function that runs the whole show
 async function checkAndPostGames() {
-    console.log(`[${new Date().toLocaleString()}] Checking for new free games...`);
+    console.log(`[${new Date().toLocaleString()}] Sniffing around the internet for free games...`);
     const games = await fetchFreeGames();
     if (!games || !Array.isArray(games)) return;
 
-    // Load games from database asynchronously
+    // Grab the massive list of games we already snitched about
     const postedGames = await loadPostedGames();
     const isFirstRun = postedGames.length === 0;
     let newGamesCount = 0;
 
-    // Process from newest to oldest
+    // Let's sort this mess out
     const newGamesToPost = [];
     const initialRunGamesToSave = [];
 
     for (const game of games) {
         if (!postedGames.includes(game.id)) {
             if (isFirstRun) {
-                // Collect IDs to bulk save on initial run
+                // First time running? Shove them all in the DB so we don't accidentally nuke the Discord server
                 initialRunGamesToSave.push(game.id);
             } else {
-                newGamesToPost.unshift(game); // Add to beginning
+                newGamesToPost.unshift(game); // Put older games first so the timeline makes sense
             }
         }
     }
 
     if (isFirstRun) {
-        console.log(`First run setup complete. Marked ${games.length} existing giveaways as seen to prevent server spam!`);
+        console.log(`First run complete! Successfully hid ${games.length} old giveaways under the rug.`);
         await savePostedGamesBulk(initialRunGamesToSave);
         return;
     }
 
     if (newGamesToPost.length === 0) {
-        console.log('No new games found.');
+        console.log('No new games. Time to touch grass.');
         return;
     }
 
+    // Don't anger the Discord rate limit gods (max 10 at once)
     const maxToPost = Math.min(newGamesToPost.length, 10);
 
     for (let i = 0; i < maxToPost; i++) {
         const game = newGamesToPost[i];
         await postGameToWebhook(game);
         
-        // Save to DB immediately after posting
+        // Etch it into the DB so we never speak of it again
         await savePostedGame(game.id);
         
         newGamesCount++;
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Chill for 2 seconds
     }
 
-    console.log(`Finished checking. Posted ${newGamesCount} new games.`);
+    console.log(`Mission accomplished. Shot ${newGamesCount} new games into the server.`);
 }
 
-// Start the application
-console.log('Free Games Webhook script started!');
+// Fire up the engines!
+console.log('Free Games Webhook script has awakened!');
 
-// Run immediately on startup
+// Do a vibe check immediately on startup
 checkAndPostGames();
 
-// Schedule to run every 10 minutes
+// Set an alarm to do this all over again every 10 minutes
 cron.schedule('*/10 * * * *', () => {
     checkAndPostGames();
 });
-console.log('Scheduled to check every 10 minutes.');
+console.log('Alarm set! See you in 10 minutes.');

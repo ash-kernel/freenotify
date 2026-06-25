@@ -4,7 +4,7 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-// Initialize the table
+// Wake up the mighty CockroachDB
 async function initDB() {
     try {
         await pool.query(`
@@ -13,33 +13,33 @@ async function initDB() {
                 posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('Database initialized successfully.');
+        console.log('Database flexed its muscles and is ready.');
     } catch (error) {
-        console.error('Failed to initialize database:', error);
+        console.error('The database tripped over its own shoelaces:', error);
     }
 }
 
-// Load all posted game IDs from the database
+// Dig up all the game IDs we already spammed about
 async function loadPostedGames() {
     try {
         const res = await pool.query('SELECT id FROM posted_games');
         return res.rows.map(row => row.id);
     } catch (error) {
-        console.error('Error loading from DB:', error);
+        console.error('DB refused to hand over the goodies:', error);
         return [];
     }
 }
 
-// Save a single game ID to the database
+// Slap a single game ID into the database forever
 async function savePostedGame(gameId) {
     try {
         await pool.query('INSERT INTO posted_games (id) VALUES ($1) ON CONFLICT DO NOTHING', [gameId]);
     } catch (error) {
-        console.error('Error saving to DB:', error);
+        console.error('Failed to shove game into DB:', error);
     }
 }
 
-// Bulk save multiple game IDs (used for initial run)
+// Dump a truckload of game IDs into the DB so we don't spam the server on the first run
 async function savePostedGamesBulk(gameIds) {
     if (gameIds.length === 0) return;
     try {
@@ -57,11 +57,11 @@ async function savePostedGamesBulk(gameIds) {
             client.release();
         }
     } catch (error) {
-        console.error('Error bulk saving to DB:', error);
+        console.error('The truck crashed while bulk saving:', error);
     }
 }
 
-// Ensure the table exists on startup
+// Make sure the table exists before we do anything crazy
 initDB();
 
 module.exports = {

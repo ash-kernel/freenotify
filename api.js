@@ -1,14 +1,14 @@
-// Fetch free games from GamerPower API
+// Time to rob GamerPower of their precious free game data
 async function fetchFreeGames() {
     try {
-        // Fetch only full games (excludes DLCs, Beta keys, Loot, etc)
+        // We only want the good stuff (actual games), no useless wallpaper DLCs
         const response = await fetch('https://www.gamerpower.com/api/giveaways?type=game');
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`GamerPower hit us with a spicy error: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
-        console.error('Error fetching games from API:', error);
+        console.error('Mission failed, we\'ll get em next time (API Error):', error);
         return null;
     }
 }
