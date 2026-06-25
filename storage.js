@@ -62,10 +62,22 @@ async function savePostedGamesBulk(gameIds) {
 }
 
 // Make sure the table exists before we do anything crazy
-initDB();
-
+// Clean up games older than X days so they can be posted again as reminders
+async function deleteOldGames(days) {
+    try {
+        const result = await pool.query(`DELETE FROM posted_games WHERE posted_at < NOW() - INTERVAL '${days} days'`);
+        if (result.rowCount > 0) {
+            console.log(`Swept out ${result.rowCount} old games from the DB for reminders.`);
+        }
+    } catch (error) {
+        console.error('Failed to sweep out the old games:', error);
+    }
+}
+// We'll export this so index.js can wait for it to finish
 module.exports = {
+    initDB,
     loadPostedGames,
     savePostedGame,
-    savePostedGamesBulk
+    savePostedGamesBulk,
+    deleteOldGames
 };
