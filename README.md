@@ -1,7 +1,5 @@
 <div align="center">
-<img src="assets/shavv.png" width="400">
-
-# Free Notify
+<img src="assets/image.png" width="400">
 </div>
 
 A lightweight Node.js script that automatically fetches the latest free games (from Epic Games, Steam, GOG, etc.) using the GamerPower API and posts them directly to your Discord server via Webhook.
