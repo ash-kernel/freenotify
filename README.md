@@ -27,7 +27,9 @@ A lightweight Node.js script that automatically fetches the latest free games (f
    Create a `.env` file in the root directory and add your Webhook URL and Database URL:
    ```env
    DISCORD_WEBHOOK_URL=your_discord_webhook_url_here
-   DATABASE_URL=your_postgresql_database_url_here
+   DATABASE_URL="postgresql://user:password@host:port/database?sslmode=verify-full"
+   IGNORED_PLATFORMS=
+   REMINDER_DAYS=
    ```
 
 3. **Run the Script:**
