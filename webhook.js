@@ -6,33 +6,52 @@ if (!WEBHOOK_URL || WEBHOOK_URL === 'your_discord_webhook_url_here') {
     process.exit(1);
 }
 
+// Format end date nicely, or return a fallback string
+function formatEndDate(endDate) {
+    if (!endDate || endDate === 'N/A') return 'Unknown';
+    const d = new Date(endDate);
+    if (isNaN(d.getTime())) return 'Unknown';
+    return `<t:${Math.floor(d.getTime() / 1000)}:R>`; // Discord relative timestamp
+}
+
 // Yeet a game straight into the Discord Webhook
+// Returns true on success, false on failure — so the caller can decide whether to save to DB
 async function postGameToWebhook(game) {
+    const worthValue = (!game.worth || game.worth === 'N/A' || game.worth === '0.00 $')
+        ? 'Free'
+        : `~~${game.worth}~~ Free`;
+
     const embed = {
-        title: game.title,
+        title: `🎮 ${game.title}`,
         url: game.open_giveaway,
-        description: game.description,
-        color: 0x000001, // Paint it black (like my soul)
+        description: game.description || 'No description available.',
+        color: 0x9E02F8, // Purple — matched to logo
+        thumbnail: {
+            url: game.thumbnail
+        },
         image: {
             url: game.image
         },
         fields: [
             {
-                name: 'Platforms',
-                value: game.platforms,
+                name: '🖥️ Platforms',
+                value: game.platforms || 'Unknown',
                 inline: true
             },
             {
-                name: 'Worth',
-                value: game.worth === 'N/A' ? 'Free' : `~~${game.worth}~~ Free`,
+                name: '💰 Worth',
+                value: worthValue,
                 inline: true
             },
             {
-                name: 'Type',
-                value: game.type,
+                name: '⏳ Ends',
+                value: formatEndDate(game.end_date),
                 inline: true
             }
         ],
+        footer: {
+            text: 'via GamerPower • Free Notify'
+        },
         timestamp: new Date().toISOString()
     };
 
@@ -52,12 +71,16 @@ async function postGameToWebhook(game) {
         });
 
         if (!response.ok) {
-            console.error(`Discord rejected our beautiful embed: ${response.status} ${response.statusText}`);
-        } else {
-            console.log(`Successfully yeeted: ${game.title}`);
+            const body = await response.text();
+            console.error(`Discord rejected our beautiful embed: ${response.status} ${response.statusText} — ${body}`);
+            return false;
         }
+
+        console.log(`Successfully yeeted: ${game.title}`);
+        return true;
     } catch (error) {
         console.error('Discord Webhook said nope:', error);
+        return false;
     }
 }
 

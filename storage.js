@@ -9,7 +9,7 @@ async function initDB() {
     try {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS posted_games (
-                id INT PRIMARY KEY,
+                id BIGINT PRIMARY KEY,
                 posted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -20,10 +20,11 @@ async function initDB() {
 }
 
 // Dig up all the game IDs we already spammed about
+// NOTE: pg returns BIGINT as strings — we normalize to String so comparisons don't fail
 async function loadPostedGames() {
     try {
         const res = await pool.query('SELECT id FROM posted_games');
-        return res.rows.map(row => row.id);
+        return res.rows.map(row => String(row.id));
     } catch (error) {
         console.error('DB refused to hand over the goodies:', error);
         return [];
@@ -33,7 +34,7 @@ async function loadPostedGames() {
 // Slap a single game ID into the database forever
 async function savePostedGame(gameId) {
     try {
-        await pool.query('INSERT INTO posted_games (id) VALUES ($1) ON CONFLICT DO NOTHING', [gameId]);
+        await pool.query('INSERT INTO posted_games (id) VALUES ($1) ON CONFLICT DO NOTHING', [String(gameId)]);
     } catch (error) {
         console.error('Failed to shove game into DB:', error);
     }
@@ -47,7 +48,7 @@ async function savePostedGamesBulk(gameIds) {
         try {
             await client.query('BEGIN');
             for (const id of gameIds) {
-                await client.query('INSERT INTO posted_games (id) VALUES ($1) ON CONFLICT DO NOTHING', [id]);
+                await client.query('INSERT INTO posted_games (id) VALUES ($1) ON CONFLICT DO NOTHING', [String(id)]);
             }
             await client.query('COMMIT');
         } catch (error) {
@@ -61,7 +62,6 @@ async function savePostedGamesBulk(gameIds) {
     }
 }
 
-// Make sure the table exists before we do anything crazy
 // Clean up games older than X days so they can be posted again as reminders
 async function deleteOldGames(days) {
     try {
@@ -73,7 +73,7 @@ async function deleteOldGames(days) {
         console.error('Failed to sweep out the old games:', error);
     }
 }
-// We'll export this so index.js can wait for it to finish
+
 module.exports = {
     initDB,
     loadPostedGames,

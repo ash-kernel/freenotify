@@ -39,7 +39,7 @@ async function checkAndPostGames() {
             continue;
         }
 
-        if (!postedGames.includes(game.id)) {
+        if (!postedGames.includes(String(game.id))) {
             if (isFirstRun) {
                 // On the very first run, we post the single newest game just to prove it works
                 if (i === 0) {
@@ -69,12 +69,14 @@ async function checkAndPostGames() {
 
     for (let i = 0; i < maxToPost; i++) {
         const game = newGamesToPost[i];
-        await postGameToWebhook(game);
+        const success = await postGameToWebhook(game);
 
-        // Etch it into the DB so we never speak of it again
-        await savePostedGame(game.id);
+        // Only etch it into the DB if Discord actually accepted it
+        if (success) {
+            await savePostedGame(game.id);
+            newGamesCount++;
+        }
 
-        newGamesCount++;
         await new Promise(resolve => setTimeout(resolve, 2000)); // Chill for 2 seconds
     }
 

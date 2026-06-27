@@ -5,7 +5,7 @@
 A lightweight Node.js script that automatically fetches the latest free games (from Epic Games, Steam, GOG, etc.) using the GamerPower API and posts them directly to your Discord server via Webhook.
 
 ## Features
-- **Fully Automated**: Runs quietly in the background and checks for new games every 10 minutes.
+- **Fully Automated**: Runs quietly in the background and checks for new games every 30 minutes.
 - **No Spam**: Remembers previously posted games using a PostgreSQL database so your server only gets pinged for brand new drops.
 - **Discord Webhooks**: Uses a simple Discord Webhook instead of a heavy Discord Bot.
 - **Slick Embeds**: Posts games using a beautiful black-themed embed containing the game's title, image, platforms, original price, and a direct link to claim it.
